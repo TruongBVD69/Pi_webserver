@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload and Download</title>
+    <!-- Liên kết tới file CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+
+</head>
+<body>
+
+<header>
+    <h1>File Upload and Download</h1>
+</header>
+
+<div class="container">
+    <!-- Phần thông báo nếu có -->
+    {% if message %}
+    <p class="message">{{ message }}</p>
+    {% endif %}
+
+    <h2>Upload File</h2>
+    <!-- Form upload file với lựa chọn ảnh hoặc video -->
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <label for="file">Choose a file:</label>
+        <input type="file" name="file" required>
+
+        <br><br>
+
+        <!-- Chọn loại file (ảnh hoặc video) -->
+        <label for="file_type">Choose file type:</label>
+        <select name="file_type" required>
+            <option value="picture">Picture</option>
+            <option value="video">Video</option>
+        </select>
+
+        <button type="submit">Upload</button>
+    </form>
+
+    <h2>Uploaded Pictures</h2>
+    <ul>
+        {% for file in pictures %}
+        <li>
+            <a href="/download/pictures/{{ file }}">{{ file }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Uploaded Videos</h2>
+    <ul>
+        {% for file in videos %}
+        <li>
+            <a href="/download/videos/{{ file }}">{{ file }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+</body>
+</html>
+
