@@ -4,3 +4,4 @@
 *.ptx
 *.cubin
 *.fatbin
+Pi_mqtt_mosquitto/main
