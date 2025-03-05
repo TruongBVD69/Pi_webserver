@@ -13,7 +13,8 @@ const char* CLIENT_ID = "RaspberryPi2W_Client";
 const char* TOPIC_HMI_1 = "hmi/display/system_status";
 const char* TOPIC_EVC_1 = "hmi/app/battery";
 const char* TOPIC_EVC_2 = "hmi/app/charging";
-const char* TOPIC_EVC_3 = "hmi/app/charging_cash";
+const char* TOPIC_EVC_3 = "hmi/app/charging_time";  // Thông số thời gian sạc
+const char* TOPIC_EVC_4 = "hmi/app/charging_cash";  // Thông số tiền sạc
 
 std::vector<std::string> screen_statuses = {"Available", "Unavailable", "Faulted", "SuspendedEV", "SuspendedEVSE", "Finishing", "Reservation", "Unplug", "Reset", "Charging"};
 
@@ -78,10 +79,18 @@ int main() {
                     std::cout << "Published: " << json_charging_payload << std::endl;
                     json_object_put(charging_payload); // Giải phóng bộ nhớ
 
+                    json_object *charging_time_payload = json_object_new_object();
+                    json_object_object_add(charging_time_payload, "remaining_time", json_object_new_int(100 - battery_level));
+                    json_object_object_add(charging_time_payload, "charging_time", json_object_new_int(charging_time));
+                    const char* json_charging_time_payload = json_object_to_json_string(charging_time_payload);
+                    mosquitto_publish(mosq, nullptr, TOPIC_EVC_3, strlen(json_charging_time_payload), json_charging_time_payload, 1, false);
+                    std::cout << "Published: " << json_charging_time_payload << std::endl;
+                    json_object_put(charging_time_payload); // Giải phóng bộ nhớ
+
                     json_object *cash_payload = json_object_new_object();
                     json_object_object_add(cash_payload, "charging_cash", json_object_new_int(charging_cash));
                     const char* json_cash_payload = json_object_to_json_string(cash_payload);
-                    mosquitto_publish(mosq, nullptr, TOPIC_EVC_3, strlen(json_cash_payload), json_cash_payload, 1, false);
+                    mosquitto_publish(mosq, nullptr, TOPIC_EVC_4, strlen(json_cash_payload), json_cash_payload, 1, false);
                     std::cout << "Published: " << json_cash_payload << std::endl;
                     json_object_put(cash_payload); // Giải phóng bộ nhớ
                     
