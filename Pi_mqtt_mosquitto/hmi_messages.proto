@@ -1,0 +1,282 @@
+syntax = "proto2";
+
+package broker;
+
+// Trạng thái màn hình
+enum ScreenStatus {
+    UNKNOWN = 0;
+    AVAILABLE = 1;
+    UNAVAILABLE = 2;
+    CHARGING = 3;
+    FAULTED = 4;
+    SUSPENDED_EV = 5;
+    SUSPENDED_EVSE = 6;
+    FINISHING = 7;
+    RESERVATION = 8;
+    UNPLUG = 9;
+    RESET = 10;
+    PREPARING =11;
+}
+
+enum PilotStates {
+    kStateA = 0;
+    kStateB = 1;
+    kStateC = 2;
+    kStateD = 3;
+    kStateE = 4;
+    kStateF = 5;
+}
+
+/**
+ * Connection status message, used for these following topics:
+ * - kBrokerTopic_Hmi_Rfid_ConnectionStatus
+ * - kBrokerTopic_Hmi_Display_ConnectionStatus
+ * - kBrokerTopic_Hmi_Ext_ConnectionStatus
+ */
+message ConnectionStatus {
+    required bool is_connected = 1;
+}
+
+/**
+ * Error code status message, used for these following topics:
+ * - kBrokerTopic_Hmi_Rfid_ErrorCode
+ * - kBrokerTopic_Hmi_Display_ErrorCode
+ * - kBrokerTopic_Hmi_Ext_ErrorCode
+ * - kBrokerTopic_Hmi_App_ErrorCode
+ * - kBrokerTopic_Ocpp_Connector_Status
+ */
+message Error {
+    required uint32 error_code = 1;
+}
+
+message RfidUid {
+    required uint32 gun_id = 1;
+    required bytes uid = 2;
+    required uint32 uid_len = 3;
+}
+
+message EvMac {
+    required uint32 gun_id = 1;
+    required bytes mac_addr = 2;
+}
+
+message ScreenIdCurrent {
+    required uint32 screen_id = 1;
+}
+
+message ScreenIdActive {
+    required uint32 screen_id = 1;
+}
+
+message ModuleStatus {
+    required uint32 gun_id = 1;
+    required bool   is_connected = 2;
+}
+
+message Account {
+    required uint32 gun_id = 1;
+    required string account = 2;
+    required uint32 account_len = 3;
+}
+
+message BattPercent {
+    required uint32 gun_id = 1;
+    required uint32 batt_percent = 2;
+}
+
+message Temperature {
+    required uint32 gun_id = 1;
+    required double temperature = 2;
+}
+
+message Voltage {
+    required uint32 gun_id = 1;
+    required double voltage = 2;
+}
+
+message Current {
+    required uint32 gun_id = 1;
+    required double current = 2;
+}
+
+message RemainingTime {
+    required uint32 gun_id = 1;
+    required uint32 remaining_time = 2;
+}
+
+message ChargingTime {
+    required uint32 gun_id = 1;
+    required uint32 charging_time = 2;
+}
+
+message ChargingPower {
+    required uint32 gun_id = 1;
+    required uint32 charging_power = 2;
+}
+
+message ChargingEnergy {
+    required uint32 gun_id = 1;
+    required uint32 charging_energy = 2;
+}
+
+message ChargingCash {
+    required uint32 gun_id = 1;
+    required uint32 charging_cash = 2;
+}
+
+message ActiveSocket {
+    required uint32 gun_id = 1;
+    required bool active_socket = 2;
+}
+
+// Dữ liệu màn hình HMI
+message HMIStatus {
+    required uint32 gun_id = 1;
+    required ScreenStatus screen_status = 2;
+}
+
+message HmiErrorCodeData {
+    required uint64 error = 1;
+}
+
+message AuthenResult {
+    required uint32 gun_id = 1;
+    required uint32 authen_type = 2;
+    required uint32 ev_type = 3;
+    required bool authen_ok = 4;
+}
+
+message StateInfo {
+    required uint32 gun_id = 1;
+    required uint32 state = 2;
+}
+
+message CsmsFotaTrigger {
+    required string url = 1;
+    required uint32 url_len = 2;
+    required string file_name = 3;
+    required uint32 file_name_len = 4;
+    required uint32 app_id = 5;
+}
+
+enum StatusEnum {
+  OK = 0;
+  NG = 1;
+}
+
+message Post {
+    
+    message MAIN {
+        required string swVersion = 1;
+        required string hwVersion = 2;
+        required string serialNo = 3;
+        required StatusEnum ddr = 4;
+        required StatusEnum emmc = 5;
+        required StatusEnum i2c = 6;
+        required StatusEnum can0 = 7;
+        required StatusEnum can1 = 8;
+        required StatusEnum eth0 = 9;
+        required StatusEnum eth1 = 10;
+        required StatusEnum usb = 11;
+    }
+    message PLC_IMX {
+        required string swVersion = 1;
+        required string hwVersion = 2;
+        required string serialNo = 3;
+        required StatusEnum ddr = 4;
+        required StatusEnum emmc = 5;
+        required StatusEnum i2c = 6;
+        required StatusEnum can = 7;
+        required StatusEnum eth = 8;
+    }
+    message FAN {
+        required string swVersion = 1;
+        required string hwVersion = 2;
+        required string serialNo = 3;
+        repeated StatusEnum fanStatus = 4;
+        required StatusEnum allFanStatus = 5;
+        required StatusEnum highTempStatus = 6;
+        required StatusEnum temp0Sensor = 7;
+        required StatusEnum temp1Sensor = 8;
+        required StatusEnum temp2Sensor = 9;
+        required StatusEnum canConnectStatus = 10;
+    }
+    message IO {
+        required string swVersion = 1;
+        required string hwVersion = 2;
+        required string serialNo = 3;
+        required StatusEnum flashStatus = 4;
+        required StatusEnum canConnectStatus = 5;
+        repeated StatusEnum meterConnectStatus = 6;
+        required StatusEnum doorStatus = 7;
+        required StatusEnum emergencyBtnStatus = 8;
+        required StatusEnum spdStatus = 9;
+    }
+    message HV {
+        required string swVersion = 1;
+        required string hwVersion = 2;
+        required string serialNo = 3;
+        required StatusEnum acRelayStatus = 4;
+        required StatusEnum inputOverVoltage = 5;
+        required StatusEnum inputUnderVoltage = 6;
+        required StatusEnum output0Status = 7;
+        required StatusEnum output1Status = 8;
+        required StatusEnum output0HvRelay = 9;
+        required StatusEnum output0LvRelay = 10;
+        required StatusEnum output1HvRelay = 11;
+        required StatusEnum output1LvRelay = 12;
+        required StatusEnum parallelHvRelay = 13;
+        required StatusEnum parallelLvRelay = 14;
+        required StatusEnum flashStatus = 15;
+        required StatusEnum canConnectStatus = 16;
+    }
+    message RFID {
+        required string swVersion = 1;
+        required string hwVersion = 2;
+        required string serialNo = 3;
+        required StatusEnum transceiverStatus = 4;
+    }
+    message PLC_XMC {
+        required string swVersion = 1;
+        required string hwVersion = 2;
+        required string serialNo = 3;
+        required StatusEnum canConnectStatus = 4;
+        required StatusEnum adcPwmStatus = 5;
+    }
+    required MAIN main = 1;
+    repeated PLC_IMX plc_imx = 2;
+    required FAN fan = 3;
+    required IO io = 4;
+    required HV hv = 5;
+    required RFID rfid = 6;
+    repeated PLC_XMC plc_xmc = 7;
+}
+
+message SystemOpMode {
+    required uint32 op_mode = 1;
+}
+
+message FastChargeInfo {
+    required uint32 gun_id = 1;
+    required bool is_enabled = 2;
+}
+
+message ChargingReport {
+    required uint64 gun_id = 1;
+    required bool result = 2;
+    required string ev_mac = 3;
+    required uint64 time = 4;
+    required double power_val = 5;
+    required uint64 power_mul = 6;
+}
+
+message GunError {
+    required uint32 gun_id = 1;
+    required bool gun_error = 2;
+    required bool station_error = 3;
+}
+
+message RecoverInfo {
+    required uint32 gun_id = 1;
+    required bool is_recover_passed = 2;
+}
