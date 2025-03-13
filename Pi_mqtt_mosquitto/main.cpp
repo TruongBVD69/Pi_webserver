@@ -6,9 +6,9 @@
 #include <chrono>
 #include <vector>
 
-const char* SERVER_ADDRESS = "test.mosquitto.org";
+const char* SERVER_ADDRESS = "localhost";
 const int SERVER_PORT = 1883;
-const char* CLIENT_ID = "RaspberryPi2W_Client";
+const char* CLIENT_ID = "RaspberryPi3B_Client";
 
 const char* TOPICS[] = {
     "hmi/rfid/connection_status",       // Trạng thái kết nối RFID ------------ (TOPICS[0])
@@ -46,11 +46,8 @@ const char* TOPICS[] = {
 };
 
 std::vector<Broker__ScreenStatus> screen_statuses = {
-    BROKER__SCREEN_STATUS__CHARGING, \
-    BROKER__SCREEN_STATUS__SUSPENDED_EV, \
-    BROKER__SCREEN_STATUS__SUSPENDED_EVSE, \
     BROKER__SCREEN_STATUS__RESERVATION,\
-    BROKER__SCREEN_STATUS__RESET
+    BROKER__SCREEN_STATUS__RESET, BROKER__SCREEN_STATUS__CHARGING
 };
 
 void publish_message(mosquitto* mosq, const char* topic, void* message, size_t message_size) {
@@ -93,6 +90,7 @@ int main() {
         uint8_t* packed_activeSocket = (uint8_t*)malloc(activeSocket_msg_size);
         broker__active_socket__pack(&activeSocket_msg, packed_activeSocket);
         publish_message(mosq, TOPICS[29], packed_activeSocket, activeSocket_msg_size);
+        free(packed_activeSocket);
         std::this_thread::sleep_for(std::chrono::seconds(5));
 
         activeSocket_msg.active_socket = true;
@@ -110,6 +108,7 @@ int main() {
         uint8_t* packed_gun_error = (uint8_t*)malloc(gun_error_msg_size);
         broker__gun_error__pack(&Gun_error_msg, packed_gun_error);
         publish_message(mosq, TOPICS[11], packed_gun_error, gun_error_msg_size);
+        free(packed_gun_error);
         std::this_thread::sleep_for(std::chrono::seconds(5));
 
         Gun_error_msg.gun_error = false;
@@ -213,7 +212,7 @@ int main() {
                     publish_message(mosq, TOPICS[27], packed_chargingCash, chargingCash_msg_size);
                     free(packed_chargingCash);
 
-                    if (battery_level >= 100) {
+                    if (battery_level > 100) {
                         // Đã sạc đầy
                         Broker__HMIStatus completed_status_msg = BROKER__HMISTATUS__INIT;
                         completed_status_msg.screen_status = BROKER__SCREEN_STATUS__FINISHING;
@@ -221,14 +220,23 @@ int main() {
                         uint8_t* packed_completed_status = (uint8_t*)malloc(completed_status_msg_size);
                         broker__hmistatus__pack(&completed_status_msg, packed_completed_status);
                         publish_message(mosq, TOPICS[30], packed_completed_status, completed_status_msg_size);
-                        free(packed_status);
+                        free(packed_completed_status);
 
                         std::this_thread::sleep_for(std::chrono::seconds(5));
 
                         // Chuẩn bị lại
 
-                        std::cout << "Charging completed. Waiting for 10 seconds before restarting..." << std::endl;
-                        // std::this_thread::sleep_for(std::chrono::seconds(20));
+			Broker__HMIStatus preparing_status_msg = BROKER__HMISTATUS__INIT;
+                        preparing_status_msg.screen_status = BROKER__SCREEN_STATUS__PREPARING;
+                        size_t preparing_status_msg_size = broker__hmistatus__get_packed_size(&preparing_status_msg);
+                        uint8_t* packed_preparing_status = (uint8_t*)malloc(preparing_status_msg_size);
+                        broker__hmistatus__pack(&preparing_status_msg, packed_preparing_status);
+                        publish_message(mosq, TOPICS[30], packed_preparing_status, preparing_status_msg_size);
+                        free(packed_preparing_status);
+
+			std::cout << "Charging completed. Waiting for 10 seconds before restarting..." << std::endl;
+                        std::this_thread::sleep_for(std::chrono::seconds(10));
+
 
                         battery_level = 0;
                         break;

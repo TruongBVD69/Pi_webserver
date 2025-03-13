@@ -1,7 +1,1 @@
-*.i
-*.ii
-*.gpu
-*.ptx
-*.cubin
-*.fatbin
-Pi_mqtt_mosquitto/main
+Pi_mqtt_mosquitto/my_program
